@@ -3,6 +3,12 @@ let street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 })
 
+let sat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    attribution: 'Copyright Google Maps. ThanksToGoogleMap',
+    subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+});
+
 let topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 });
@@ -11,20 +17,23 @@ let topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
 let myMap = L.map("map", {
     center: [40.7, -94.5],
     zoom: 3,
-    layers: [street, topo]
+    layers: [street, topo, sat]
 });
 
 // Create a baseMaps object
 let baseMaps = {
     "Street Map": street,
+    "Satellite": sat,
     "Topographic Map": topo
 };
 
 //set variables
 let earthquakes = new L.LayerGroup();
+let tectonicplates = new L.LayerGroup();
 
 // Create an overlay object to hold our overlay
 let overlayMaps = {
+    "Tectonic Plates": tectonicplates,
     Earthquakes: earthquakes
 };
 
@@ -126,6 +135,16 @@ d3.json(queryUrl).then(function (data) {
 
     // Adding the legend to the map
     legend.addTo(myMap);
+
+    d3.json("https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json").then(function (platedata) {
+
+        L.geoJson(platedata, {
+            color: "orange",
+            weight: 2
+        }).addTo(tectonicplates);
+
+        tectonicplates.addTo(myMap);
+    });
 
 });
 
